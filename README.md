@@ -16,6 +16,3 @@ Copy `config.php.example` to `config.php` and modify it for your details.
 
 ## Usage
 Visit `http://your-site/modifymautic/` in your browser. The rest is self-explanatory.
-
----
-# NB: Not yet functional.
