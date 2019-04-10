@@ -32,9 +32,6 @@ switch ($action) {
     // Save the submitted email deets
     case 'save':
         if (!empty($_POST['id'])) {
-            foreach ($_POST as $key => $value) {
-                $_POST['key'] = html_entity_decode($value);
-            }
             $email = $modifyMautic->createEmailObject($_POST);
 
             if ($modifyMautic->updateEmail($_POST['id'], $email)) {

@@ -23,7 +23,7 @@ class ModifyMautic
         $this->config = include($this->dir . 'config.php');
 
         // Make sure all required config values are specified
-        $expected = ['host', 'port', 'user', 'pass', 'db', 'emailsTable', 'allowedIps'];
+        $expected = ['allowedIps', 'host', 'port', 'user', 'pass', 'db', 'emailsTable'];
         foreach ($expected as $item) {
             if (!isset($this->config[$item])) {
                 $this->error("Config item '{$item}' missing.");
@@ -94,7 +94,7 @@ class ModifyMautic
                 if (property_exists($email, $key)) {
                     $item = $email->{$key};
                     if (is_string($item) || empty($item)) {
-                        $template = str_replace("{{{$key}}}", htmlentities(utf8_decode($item)), $template);
+                        $template = str_replace("{{{$key}}}", $item, $template);
                     }
                 }
             }
@@ -121,7 +121,7 @@ class ModifyMautic
             foreach ($content as $key => $item) {
                 if (is_string($item)) {
                     $newTemplate = str_replace("{{contentFieldName}}", $key, $template);
-                    $result[]    = str_replace("{{contentFieldValue}}", $item, $newTemplate);
+                    $result[]    = str_replace("{{contentFieldValue}}", htmlspecialchars($item), $newTemplate);
                 }
             }
         }
