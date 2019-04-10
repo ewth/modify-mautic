@@ -8,8 +8,7 @@ $content = file_get_contents($dir . 'template.index.html');
 
 $modifyMautic = new ModifyMautic();
 
-// Ya'll best have PHP7.
-$action = $_GET['action'] ?? '';
+$action = empty($_GET['action']) ? '' : $_GET['action'];
 
 // Do whatever the action dictates
 switch ($action) {
