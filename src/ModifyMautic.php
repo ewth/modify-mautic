@@ -7,8 +7,6 @@ class ModifyMautic
     protected $config;
     protected $emailsTable;
     protected $emailsStructure = [];
-    protected $textFields      = [];
-    protected $varcharFields   = [];
 
     /**
      * ModifyMautic constructor.
@@ -52,11 +50,6 @@ class ModifyMautic
             // We're only interested in string fields
             if (strpos($row['Type'], 'char') !== false || strpos($row['Type'], 'text') !== false) {
                 $this->emailsStructure[] = $row['Field'];
-                if ($row['Type'] == 'text') {
-                    $this->textFields[] = $row['Field'];
-                } else {
-                    $this->varcharFields[] = $row['Field'];
-                }
             }
         }
         if (empty($this->emailsStructure)) {
@@ -79,22 +72,53 @@ class ModifyMautic
     }
 
     /**
-     * Replace {{item}} with $email->item if it exists, within content.
+     * Replace {{item}} with $email->item if it exists, within template.
      *
-     * @param $email
-     * @param $content
+     * @param object $email
+     * @param string $template
      *
      * @return mixed
      */
-    public function replaceContent($email, $content)
+    public function parseTemplate($email, $template)
     {
-        if (!empty($this->emailsStructure) && is_array($this->emailsStructure)) {
-            foreach ($email as $key => $item) {
-                $content = str_replace("{{{$key}}}", $email->{$key}, $content);
+        if (is_object($email) && !empty($this->emailsStructure) && is_array($this->emailsStructure)) {
+            foreach ($this->emailsStructure as $key) {
+                if (property_exists($email, $key)) {
+                    $item = $email->{$key};
+                    if (is_string($item) || empty($item)) {
+                        $template = str_replace("{{{$key}}}", htmlentities(utf8_decode($item)), $template);
+                    }
+                }
+            }
+            if (isset($email->id)) {
+                $template = str_replace("{{id}}", $email->id, $template);
             }
         }
 
-        return $content;
+        return $template;
+    }
+
+    /**
+     * Parse the content fields for a template.
+     *
+     * @param string $content
+     * @param string $template
+     *
+     * @return array
+     */
+    public function parseContentFields($content, $template)
+    {
+        $result = [];
+        if (is_object($content)) {
+            foreach ($content as $key => $item) {
+                if (is_string($item)) {
+                    $newTemplate = str_replace("{{contentFieldName}}", $key, $template);
+                    $result[]    = str_replace("{{contentFieldValue}}", $item, $newTemplate);
+                }
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -133,11 +157,10 @@ class ModifyMautic
         $query     .= implode(', ', $set);
         $query     .= ' WHERE id = ? LIMIT 1';
         $statement = $this->db->prepare($query);
-        $statement->bind_param('s', $bind);
-        $statement->bind_param('i', $id);
+        $bind[]    = $id;
+        $statement->bind_param(str_repeat('s', count($bind) - 1) . 'i', ...$bind);
         $statement->execute();
-        $result = $statement->get_result();
-        if ($result->num_rows) {
+        if ($statement->affected_rows) {
             return true;
         }
 
@@ -162,21 +185,33 @@ class ModifyMautic
             $statement->execute();
             $result = $statement->get_result();
 
-            $email = $result->fetch_object();
-            if (!empty($email->content)) {
-                $content = unserialize($email->content);
-                foreach ($content as $key => $value) {
-                    if (!in_array($key, $this->emailsStructure)) {
-                        $this->emailsStructure[] = $key;
-                    }
-                    $email->{$key} = $value;
-                }
-            }
+            $email          = $result->fetch_object();
+            $email->content = $this->getContentFields($email->content);
 
             return $email;
         }
 
         return false;
+    }
+
+    /**
+     * Extract content fields from email
+     *
+     * @param string $content
+     *
+     * @return object
+     */
+    public function getContentFields($content)
+    {
+        $contentFields = [];
+        if (!empty($content)) {
+            $content = unserialize($content);
+            foreach ($content as $field => $value) {
+                $contentFields[$field] = $value;
+            }
+        }
+
+        return (object)$contentFields;
     }
 
     /**
@@ -193,6 +228,15 @@ class ModifyMautic
             if ($item != 'id' && isset($values[$item])) {
                 $email[$item] = $values[$item];
             }
+        }
+        if (!empty($values['contentField']) && is_array($values['contentField'])) {
+            $content = [];
+            foreach ($values['contentField'] as $key) {
+                if (isset($values[$key])) {
+                    $content[$key] = $values[$key];
+                }
+            }
+            $email['content'] = serialize($content);
         }
 
         return (object)$email;
@@ -227,5 +271,3 @@ class ModifyMautic
     }
 
 }
-
-

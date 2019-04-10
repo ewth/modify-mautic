@@ -18,8 +18,10 @@ switch ($action) {
         if (!empty($_GET['id'])) {
             $email = $modifyMautic->getEmail($_GET['id']);
             if (!empty($email)) {
-                $template = file_get_contents($dir . 'template.edit.html');
-                $content  = str_replace('{{content}}', $modifyMautic->replaceContent($email, $template), $content);
+                $templateEdit = file_get_contents($dir . 'template.edit.html');
+                $templateContentFields = file_get_contents($dir . 'template.contentFields.html');
+                $content      = str_replace('{{content}}', $modifyMautic->parseTemplate($email, $templateEdit), $content);
+                $content      = str_replace('{{contentFields}}', implode("\n", $modifyMautic->parseContentFields($email->content, $templateContentFields)), $content);
             } else {
                 throw new \Exception('Failed to load email.');
             }
@@ -31,8 +33,11 @@ switch ($action) {
     // Save the submitted email deets
     case 'save':
         if (!empty($_POST['id'])) {
+            foreach ($_POST as $key => $value) {
+                $_POST['key'] = html_entity_decode($value);
+            }
             $email = $modifyMautic->createEmailObject($_POST);
-            print_R($email);
+
             if ($modifyMautic->updateEmail($_POST['id'], $email)) {
                 $content = str_replace('{{content}}', 'Email saved. <a href="javascript:window.history.go(-2);">Back</a>', $content);
             } else {
@@ -41,6 +46,7 @@ switch ($action) {
         } else {
             throw new \Exception('No email specified.');
         }
+        // Deliberately no break
     // Default to a list of all emails
     default:
         $emails        = $modifyMautic->getEmails();
@@ -48,7 +54,7 @@ switch ($action) {
 
         $emailContent = '';
         foreach ($emails as $email) {
-            $emailContent .= $modifyMautic->replaceContent($email, $emailTemplate) . "\n";
+            $emailContent .= $modifyMautic->parseTemplate($email, $emailTemplate) . "\n";
         }
         $content = str_replace('{{content}}', $emailContent, $content);
 }
