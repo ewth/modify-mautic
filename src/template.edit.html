@@ -34,16 +34,6 @@
     </div>
     <div class="row">
         <div class="label">
-            <label for="content">Content</label>
-        </div>
-        <div class="input">
-            <textarea id="content" name="content">
-                {{content}}
-            </textarea>
-        </div>
-    </div>
-    <div class="row">
-        <div class="label">
             <label for="plain_text">Plain Text</label>
         </div>
         <div class="input">
@@ -62,6 +52,13 @@
             </textarea>
         </div>
     </div>
+    <hr>
+    <div class="row">
+        <div class="label">
+            <strong>Content Fields</strong>
+        </div>
+    </div>
+    {{contentFields}}
     <div class="row">
         <input type="submit" value="Save">
         <input type="reset" value="Cancel" onclick="window.history.back()">
