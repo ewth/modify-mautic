@@ -14,6 +14,7 @@ a:hover {
 }
 
 .item {
+    vertical-align: top;
     display: inline-block;
 }
 
