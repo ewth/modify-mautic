@@ -1,11 +1,12 @@
 <?php
 
 return [
-    'host'        => 'localhost',       // Your database host
-    'port'        => 3306,              // Your database port
-    'user'        => 'root',            // ... username
-    'pass'        => 'password',        // ... password
-    'db'          => 'mautic',          // The database name that Mautic uses
-    'emailsTable' => 'emails'           // The table that emails are stored in.
-                                        //   Usually just 'emails' unless you have a prefix configured.
+    'allowedIps'  => ['127.0.0.1', '::1'],  // Array of IPs to allow access to.
+    'host'        => 'localhost',           // Your database host
+    'port'        => 3306,                  // Your database port
+    'user'        => 'root',                // ... username
+    'pass'        => 'password',            // ... password
+    'db'          => 'mautic',              // The database name that Mautic uses
+    'emailsTable' => 'emails'               // The table that emails are stored in.
+                                            //   Usually just 'emails' unless you have a prefix configured.
 ];

@@ -23,10 +23,17 @@ class ModifyMautic
         $this->config = include($this->dir . 'config.php');
 
         // Make sure all required config values are specified
-        $expected = ['host', 'port', 'user', 'pass', 'db', 'emailsTable'];
+        $expected = ['host', 'port', 'user', 'pass', 'db', 'emailsTable', 'allowedIps'];
         foreach ($expected as $item) {
             if (!isset($this->config[$item])) {
                 $this->error("Config item '{$item}' missing.");
+            }
+        }
+
+        // Very basic IP whitelist security
+        if (!empty($this->config['allowedIps']) && is_array($this->config['allowedIps'])) {
+            if (empty($_SERVER['REMOTE_ADDR']) || !in_array($_SERVER['REMOTE_ADDR'], $this->config['allowedIps'])) {
+                $this->error('You are not allowed to access this.');
             }
         }
 
