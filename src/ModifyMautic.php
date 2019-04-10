@@ -68,6 +68,7 @@ class ModifyMautic
     {
         // In hindsight I probably could have just thrown an exception directly rather than use this function;
         //  but there's always that "what if I want to change it later??!" niggle in the back of the noggin.
+        echo $errorMessage;
         throw new \Exception($errorMessage);
     }
 
