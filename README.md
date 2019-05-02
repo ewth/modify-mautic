@@ -15,7 +15,7 @@ Excuse the horrible aesthetics, this was created rather quickly to get the job d
 Copy `config.php.example` to `config.php` and modify it for your details.
 
 ## Usage
-Visit `http://your-site/modifymautic/` in your browser. The rest is self-explanatory.
+Visit `http://your-site/modify-mautic/` in your browser. The rest is self-explanatory.
 
 # Warning
 This will make irreversible changes to your database. I would not recommend using it on a production database... or anywhere else.
